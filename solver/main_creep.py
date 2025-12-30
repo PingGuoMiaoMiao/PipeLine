@@ -215,7 +215,10 @@ def main():
             # 写入VTK文件（包含蠕变应变）
             VTKWriter.write_polylines_with_creep(
                 output_file, parser.elements, parser.nodes, displacements,
-                pipe288_elems)
+                pipe288_elems,
+                sections=parser.sections,
+                output_surface=True
+            )
     
     print(f"\n蠕变分析完成！")
     print(f"最终最大位移: UX={np.max(np.abs(displacements[0::6]))*1000:.3f} mm")

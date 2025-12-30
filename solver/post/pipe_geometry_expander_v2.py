@@ -141,7 +141,7 @@ class PipeGeometryExpanderV2:
         
         # 3. 在节点之间增加插值点，使表面更光滑
         # 为每对相邻节点之间插入N个中间点
-        num_segments_per_edge = 3  # 每两个节点之间插入3个中间点（共4段）
+        num_segments_per_edge = 1  # 每两个节点之间插入1个中间点（共2段），避免臃肿
         interpolated_positions = []
         interpolated_node_map = []  # 记录每个插值点对应的原始节点索引
         
@@ -303,23 +303,22 @@ class PipeGeometryExpanderV2:
             # 如果没有找到端点，使用第一个节点
             start_node = next(iter(nodes.keys()))
         
-        # 按连接顺序遍历节点
+        # 按连接顺序遍历节点（使用队列而不是栈，确保顺序性）
         node_order = []
         visited = set()
-        stack = [start_node]
+        queue = [start_node]  # 使用队列而不是栈
         
-        while stack:
-            current = stack.pop()
+        while queue:
+            current = queue.pop(0)  # 从队列头部取出（FIFO）
             if current in visited:
                 continue
             
             visited.add(current)
             node_order.append(current)
             
-            # 添加未访问的相邻节点
-            for neighbor in node_connections[current]:
-                if neighbor not in visited:
-                    stack.append(neighbor)
+            # 添加未访问的相邻节点（按ID排序，确保顺序性）
+            neighbors = sorted([n for n in node_connections[current] if n not in visited])
+            queue.extend(neighbors)
         
         # 如果还有未访问的节点（可能是孤立的），按ID顺序添加
         for node_id in sorted(nodes.keys()):

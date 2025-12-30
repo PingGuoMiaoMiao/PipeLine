@@ -192,7 +192,10 @@ def main():
     print(f"\n写入VTK文件: {output_file}")
     VTKWriter.write_polylines_with_plasticity(
         output_file, parser.elements, parser.nodes, final_displacements,
-        pipe288_elems)
+        pipe288_elems,
+        sections=parser.sections,
+        output_surface=True
+    )
     print(f"完成！输出文件: {output_file}")
     print(f"\n可以使用ParaView打开查看: paraview {output_file}")
 

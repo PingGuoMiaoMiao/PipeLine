@@ -159,7 +159,9 @@ class VTKWriter:
     def write_polylines_with_creep(filename: str, elements: Dict[int, Element],
                                    nodes: Dict[int, Node],
                                    displacements: np.ndarray,
-                                   element_objects: Dict = None):
+                                   element_objects: Dict = None,
+                                   sections: Optional[Dict[int, Dict]] = None,
+                                   output_surface: bool = True):
         """
         写入包含蠕变应变信息的VTK文件
         
@@ -169,8 +171,21 @@ class VTKWriter:
             nodes: 节点字典
             displacements: 位移数组
             element_objects: 单元对象字典（用于获取蠕变状态）
+            sections: 截面参数字典
+            output_surface: 是否输出为表面（True）或线条（False）
         """
-        with open(filename, 'w') as f:
+        # 如果有表面输出且无ELBOW290，使用标准表面输出
+        has_elbow290 = any(elem.type == 290 for elem in elements.values())
+        if output_surface and not has_elbow290:
+            # 使用标准表面输出方法
+            VTKWriter.write_polylines(
+                filename, elements, nodes, displacements,
+                sections=sections,
+                output_surface=True
+            )
+            return
+        
+        with open(filename, 'w', encoding='utf-8') as f:
             # VTK文件头
             f.write("# vtk DataFile Version 2.0\n")
             f.write("Pipe Elements with Creep\n")
@@ -260,7 +275,9 @@ class VTKWriter:
     def write_polylines_with_plasticity(filename: str, elements: Dict[int, Element],
                                        nodes: Dict[int, Node],
                                        displacements: np.ndarray,
-                                       element_objects: Dict = None):
+                                       element_objects: Dict = None,
+                                       sections: Optional[Dict[int, Dict]] = None,
+                                       output_surface: bool = True):
         """
         写入包含塑性状态信息的VTK文件
         
@@ -270,7 +287,20 @@ class VTKWriter:
             nodes: 节点字典
             displacements: 位移数组
             element_objects: 单元对象字典（用于获取塑性状态）
+            sections: 截面参数字典
+            output_surface: 是否输出为表面（True）或线条（False）
         """
+        # 如果有表面输出且无ELBOW290，使用标准表面输出
+        has_elbow290 = any(elem.type == 290 for elem in elements.values())
+        if output_surface and not has_elbow290:
+            # 使用标准表面输出方法
+            VTKWriter.write_polylines(
+                filename, elements, nodes, displacements,
+                sections=sections,
+                output_surface=True
+            )
+            return
+        
         with open(filename, 'w', encoding='utf-8') as f:
             # VTK文件头
             f.write("# vtk DataFile Version 2.0\n")
